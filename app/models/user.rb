@@ -7,15 +7,15 @@ class User < ActiveRecord::Base
     self.username.downcase.split(" ").join("-")
   end
 
-  # def self.find_by_slug(slug)
-  #   match = ""
+  def self.find_by_slug(slug)
+    match = ""
 
-  #   self.all.each do |artist|
-  #     if artist.slug == slug
-  #        match = artist
-  #     end
-  #   end
-  #   match
-  # end
+    self.all.each do |user|
+      if user.slug == slug
+         match = user
+      end
+    end
+    match
+  end
 
 end

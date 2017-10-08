@@ -5,8 +5,8 @@ class ApplicationController < Sinatra::Base
   configure do
     set :public_folder, 'public'
     set :views, 'app/views'
-      enable :sessions
-      set :session_secret, "secret"
+    enable :sessions
+    set :session_secret, "secret"
   end
 
   get '/' do
@@ -14,7 +14,7 @@ class ApplicationController < Sinatra::Base
   end
 
   get '/signup' do
-    if session[:id]
+    if Helpers.is_logged_in?(session)
       redirect '/tweets'
     else
       erb :'users/signup'
@@ -32,18 +32,10 @@ class ApplicationController < Sinatra::Base
     redirect '/tweets'
   end
 
-  get '/tweets' do
-    if session[:id]
-      erb :'tweets/tweets'
-    else
-      redirect '/login'
-    end
-  end
 
   get '/login' do
-    if session[:id]
+    if Helpers.is_logged_in?(session)
       redirect '/tweets'
-
     else
       erb :'users/login'
     end
@@ -60,7 +52,7 @@ class ApplicationController < Sinatra::Base
   end
 
   get '/logout' do
-    if session[:id]
+    if Helpers.is_logged_in?(session)
       session.clear
       redirect '/login'
     else
@@ -68,8 +60,39 @@ class ApplicationController < Sinatra::Base
     end
   end
 
-  get '/tweets/:id'
-   erb :show_tweet
+  get '/users/:slug' do
+    @user = User.find_by_slug(params[:slug])
+    erb :'users/show'
+  end
+
+  get '/tweets' do
+    if Helpers.is_logged_in?(session)
+      @tweets = Tweet.all
+      erb :'tweets/tweets'
+    else
+      redirect '/login'
+    end
+  end
+
+  post '/tweets' do
+    @user = Helpers.current_user(session)
+    if !params[:content].empty?
+      @tweet = @user.tweets.create(content: params[:content])
+    else
+      redirect '/tweets/new'
+    end
+  end
+
+  get '/tweets/new' do
+    if Helpers.is_logged_in?(session)
+      erb :'tweets/create_tweet'
+    else
+      redirect '/login'
+    end
+  end
+
+  get 'tweets/:id' do
+
   end
 
 end
