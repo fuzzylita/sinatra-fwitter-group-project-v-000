@@ -27,5 +27,9 @@ class ApplicationController < Sinatra::Base
   get '/tweets' do
     erb :'tweets/main'
   end
+  
+  get '/' do
+    
+  end
 
 end
