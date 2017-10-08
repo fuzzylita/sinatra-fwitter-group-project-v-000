@@ -1,5 +1,5 @@
 require './config/environment'
-require 'pry'
+
 class ApplicationController < Sinatra::Base
 
   configure do
@@ -14,18 +14,62 @@ class ApplicationController < Sinatra::Base
   end
 
   get '/signup' do
-    erb :signup
+    if session[:id]
+      redirect '/tweets'
+    else
+      erb :'users/signup'
+    end
   end
 
-  post '/users' do
-    @user = User.new(username: params['username'], email: params['email'], password: params['password'])
-    @user.save
-
+  post '/signup' do
+    if params['username'].empty? || params['password'].empty? || params['email'].empty?
+      redirect '/signup'
+    else
+      @user = User.new(username: params['username'], email: params['email'], password: params['password'])
+      @user.save
+      session[:id] = @user.id
+    end
     redirect '/tweets'
   end
 
   get '/tweets' do
-    erb :'tweets/main'
+    if session[:id]
+      erb :'tweets/tweets'
+    else
+      redirect '/login'
+    end
+  end
+
+  get '/login' do
+    if session[:id]
+      redirect '/tweets'
+
+    else
+      erb :'users/login'
+    end
+  end
+
+  post '/login' do
+    @user = User.find_by(username: params[:username])
+    if @user && @user.authenticate(params[:password])
+      session[:id] = @user.id
+      redirect '/tweets'
+    else
+      redirect '/signup'
+    end
+  end
+
+  get '/logout' do
+    if session[:id]
+      session.clear
+      redirect '/login'
+    else
+    redirect '/'
+    end
+  end
+
+  get '/tweets/:id'
+   erb :show_tweet
   end
 
 end
